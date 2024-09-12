@@ -1,0 +1,1810 @@
+getViaAjax("showMenu",showMenu);
+getViaAjax("showCarousel",showCarousel);
+getViaAjax("showFooterLinks",showFooterLinks);
+function getViaAjax(fileName, specificFunction,data=null) {
+  $.ajax({
+    url: "models/" + fileName + ".php",
+    method: "get",
+    data: data,
+    dataType: "json",
+    success: function(jsonData){
+      specificFunction(jsonData);
+   },
+    error: function(xhr){
+      console.error(xhr);
+   }
+  });
+}
+function syncGetViaAjax(fileName, specificFunction,data=null) {
+  $.ajax({
+    async : false,
+    url: "models/" + fileName + ".php",
+    method: "get",
+    data: data,
+    dataType: "json",
+    success: function(jsonData){
+      specificFunction(jsonData);
+   },
+    error: function(xhr){
+      console.error(xhr);
+   }
+  });
+}
+function postViaAjax(fileName,specificFunction,data=null){
+  $.ajax({
+    url: "models/" + fileName + ".php",
+    method: "post",
+    data : data,
+    dataType: "json",
+    success: function(jsonData){
+      specificFunction(jsonData);
+   },
+    error: function(xhr){
+      console.error(xhr);
+   }
+  });
+}
+function postFormDataViaAjax(fileName,specificFunction,data=null){
+  $.ajax({
+    url: "models/" + fileName + ".php",
+    method: "post",
+    data : data,
+    contentType:false, 
+    processData: false,
+    success: function(jsonData){
+      specificFunction(jsonData);
+   },
+    error: function(xhr){
+      console.error(xhr);
+   }
+  });
+}
+function showMenu(menuJsonData){
+    let writingMenu = "";
+    menuJsonData.forEach(partOfMenu=>{
+        writingMenu+=`<li id="partOfMenu${partOfMenu.id}" class="nav-item">
+          <a class="nav-link blackColor p-2 m-2" href="${partOfMenu.href}">${partOfMenu.label}</a>
+        </li>`;
+        if(partOfMenu.id==4){
+          localStorage.removeItem("signedIn");
+        }
+        if(partOfMenu.id==6){
+          localStorage.setItem("signedIn",JSON.stringify("true"));
+        }
+    });
+    $("#menu").html(writingMenu);
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php"||window.location=="http://127.0.0.1/MarkoStojanovicVinport/"){
+      $("#partOfMenu1").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu1 a").removeClass("blackColor");
+      $("#partOfMenu1 a").addClass("lightYellowColor");
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=reports"){
+      $("#partOfMenu2").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu2 a").removeClass("blackColor");
+      $("#partOfMenu2 a").addClass("lightYellowColor");
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=author"){
+      $("#partOfMenu3").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu3 a").removeClass("blackColor");
+      $("#partOfMenu3 a").addClass("lightYellowColor");
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=signIn"){
+      $("#partOfMenu4").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu4 a").removeClass("blackColor");
+      $("#partOfMenu4 a").addClass("lightYellowColor");
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=signUp"){
+      $("#partOfMenu5").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu5 a").removeClass("blackColor");
+      $("#partOfMenu5 a").addClass("lightYellowColor");
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=dashboard"){
+      $("#partOfMenu7").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu7 a").removeClass("blackColor");
+      $("#partOfMenu7 a").addClass("lightYellowColor");
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=contribute"){
+      $("#partOfMenu9").addClass("blackBackgroundColor rounded-circle");
+      $("#partOfMenu9 a").removeClass("blackColor");
+      $("#partOfMenu9 a").addClass("lightYellowColor");
+    }
+}
+function showCarousel(carouselJsonData){
+  let writingCarousel = "";
+  carouselJsonData.forEach(slide=>{
+    writingCarousel+=`
+    <div class="carousel-item backgroundSizeCover backgroundRepeatNoRepeat backgroundAttachmentFixed">
+    <img src="assets/img/${slide.src}" class="d-block w-100" alt="${slide.alt}"/>
+    <div class="carousel-caption d-none d-md-block">
+      <h1 class="lightYellowColor">Vinport</h1>
+      <h2 class="lightYellowColor">A specialized site for vintage car reports</h2>
+    </div>
+    </div>
+    `;
+  });
+  $("#carouselInner").html(writingCarousel);
+  $('.carousel-item').first().addClass('active');
+}
+function showFooterLinks(footerJsonData){
+  let writingFooterLinks = "";
+  footerJsonData.forEach(link=>{
+    writingFooterLinks+=`
+      <li>
+        <a href="${link.href}" ${link.id==3 ? "id='downloadAnPdfFile' data-toggle='tooltip' data-placement='top' title='Click on this link to download our documentation.' download='documentation'" : ""} class="lightYellowColor blackBackgroundColor"><span class="${link.icon}"></span></a>
+      </li>
+    `;
+  });
+  $("#footerLinks").html(writingFooterLinks);
+  $("#downloadAnPdfFile").tooltip();
+}
+if(window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php"){
+  getViaAjax("showSubjects",showSubjects);
+  $("#sendMessage").click(function(){
+    let firstName = $("#firstName").val();
+    let lastName = $("#lastName").val();
+    let emailAddress = $("#emailAddress").val();
+    let subjectId = $("#subjects").val();
+    let message = $("#message").val();
+    let errorCounter = 0;
+    let namePattern = /^[A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+([ ][A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+)*$/;
+    let emailAddressPattern = /^(?=.{6,30}@)[0-9a-z]+(?:\.[0-9a-z]+)*@[a-z0-9]{2,}(?:\.[a-z]{2,})+$/;
+    if(firstName!=""){
+      if(namePattern.test(firstName)){
+        $("#firstNameNote").html("You have filled in this field properly!");
+        $("#firstNameNote").removeClass("text-danger");
+        $("#firstNameNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#firstNameNote").html("You have not fill in this field properly. Example: Al McKay");
+        $("#firstNameNote").removeClass("text-success");
+        $("#firstNameNote").addClass("text-danger");
+      }
+    }
+     else {
+      errorCounter++;
+      $("#firstNameNote").html("This field must not be left blank!");
+      $("#firstNameNote").removeClass("text-success");
+      $("#firstNameNote").addClass("text-danger");
+    }
+    if(lastName!=""){
+      if(namePattern.test(lastName)){
+        $("#lastNameNote").html("You have filled in this field properly!");
+        $("#lastNameNote").removeClass("text-danger");
+        $("#lastNameNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#lastNameNote").html("You have not fill in this field properly. Example: O'Bryant Junior");
+        $("#lastNameNote").removeClass("text-success");
+        $("#lastNameNote").addClass("text-danger");
+      }
+    } 
+    else {
+      errorCounter++;
+      $("#lastNameNote").html("This field must not be left blank!");
+      $("#lastNameNote").removeClass("text-success");
+      $("#lastNameNote").addClass("text-danger");
+    }
+    if (emailAddress != "") {
+      if (emailAddressPattern.test(emailAddress)) {
+        $("#emailAddressNote").html("You have filled in this field properly!");
+        $("#emailAddressNote").removeClass("text-danger");
+        $("#emailAddressNote").addClass("text-success");
+      } 
+      else {
+        errorCounter++;
+        $("#emailAddressNote").html("You have not fill in this field properly. Example: 1james.caa1n@3mail.co.us");
+        $("#emailAddressNote").removeClass("text-success");
+        $("#emailAddressNote").addClass("text-danger");
+      }
+    } 
+    else {
+      errorCounter++;
+      $("#emailAddressNote").html("This field must not be left blank!");
+      $("#emailAddressNote").removeClass("text-success");
+      $("#emailAddressNote").addClass("text-danger");
+    }
+    if (subjectId != 0) {
+      $("#subjectNote").html("You have filled in this field properly!");
+      $("#subjectNote").removeClass("text-danger");
+      $("#subjectNote").addClass("text-success");
+    } 
+    else {
+      errorCounter++;
+      $("#subjectNote").html("You have to select a subject matter. Example: Compliment");
+      $("#subjectNote").removeClass("text-success");
+      $("#subjectNote").addClass("text-danger");
+    }
+    if (message != "") {
+      $("#messageNote").html("You have filled in this field properly!");
+      $("#messageNote").removeClass("text-danger");
+      $("#messageNote").addClass("text-success");
+    } 
+    else {
+      errorCounter++;
+      $("#messageNote").html("This field must not be left blank!");
+      $("#messageNote").removeClass("text-success");
+      $("#messageNote").addClass("text-danger");
+    }
+    if(errorCounter==0){
+      let data = {
+        firstName : firstName,
+        lastName : lastName,
+        emailAddress : emailAddress,
+        subjectId : subjectId,
+        message : message
+      }
+      postViaAjax("sendingMessage",sendingMessage,data);
+    }
+  });
+  function sendingMessage(jsonData){
+    alert(jsonData.message);
+    window.location.href="index.php";
+  }
+  function showSubjects(subjectsJsonData){
+    let writingSubjects = `<option value="0">Choose subject matter</option>`;
+    subjectsJsonData.forEach(subject=>{
+      writingSubjects += `<option value="${subject.id}">${subject.subjectName}</option>`;
+    });
+    $("#subjects").html(writingSubjects);
+  }
+}
+if (window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=signIn") {
+  $("#signIn").click(function(){
+    let username = $("#username").val();
+    let password = $("#password").val();
+    let data = {
+      username : username,
+      password : password
+    }
+    postViaAjax('signingIn',signingIn,data);
+  });
+  function signingIn(jsonData){
+    if(jsonData.message=="You have signed in successfully!"){
+      alert(jsonData.message);
+      window.location.href="index.php";
+    }
+    else if(jsonData.message=="You have entered wrong password."||jsonData.message=="There is not an user with that username."||jsonData.message=="You have entered a wrong password. Number of signing in attempts left: 2"||jsonData.message=="You have entered a wrong password. Number of signing in attempts left: 1"||jsonData.message=="Your account is locked!"){
+      alert(jsonData.message);
+    }
+    else {
+      alert("Successfull signing in!");
+      let username = jsonData.message;
+      let newPassword = prompt("Now you have to change initial password. Type your new password in the field bellow:");
+      let data = {
+        username : username,
+        newPassword : newPassword
+      }
+      postViaAjax("changingPassword",changingPassword,data);
+    }
+  }
+  function changingPassword(jsonData){
+    alert(jsonData.message);
+    window.location.href="index.php";
+  }
+}
+if (window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=signUp") {
+  $("#signUp").click(function(){
+    let firstName = $("#firstName").val();
+    let lastName = $("#lastName").val();
+    let emailAddress = $("#emailAddress").val();
+    let username = $("#username").val();
+    let password = $("#password").val();
+    let confirmPassword = $("#confirmPassword").val();
+    let errorCounter = 0;
+    let namePattern = /^[A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+([ ][A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+)*$/;
+    let emailAddressPattern = /^(?=.{6,30}@)[0-9a-z]+(?:\.[0-9a-z]+)*@[a-z0-9]{2,}(?:\.[a-z]{2,})+$/;
+    let credentialPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,50}$/;
+    if(firstName!=""){
+      if(namePattern.test(firstName)){
+        $("#firstNameNote").html("You have filled in this field properly!");
+        $("#firstNameNote").removeClass("text-danger");
+        $("#firstNameNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#firstNameNote").html("You have not fill in this field properly. Example: Al McKay");
+        $("#firstNameNote").removeClass("text-success");
+        $("#firstNameNote").addClass("text-danger");
+      }
+    }
+     else {
+      errorCounter++;
+      $("#firstNameNote").html("This field must not be left blank!");
+      $("#firstNameNote").removeClass("text-success");
+      $("#firstNameNote").addClass("text-danger");
+    }
+    if(lastName!=""){
+      if(namePattern.test(lastName)){
+        $("#lastNameNote").html("You have filled in this field properly!");
+        $("#lastNameNote").removeClass("text-danger");
+        $("#lastNameNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#lastNameNote").html("You have not fill in this field properly. Example: O'Bryant Junior");
+        $("#lastNameNote").removeClass("text-success");
+        $("#lastNameNote").addClass("text-danger");
+      }
+    } 
+    else {
+      errorCounter++;
+      $("#lastNameNote").html("This field must not be left blank!");
+      $("#lastNameNote").removeClass("text-success");
+      $("#lastNameNote").addClass("text-danger");
+    }
+    if (emailAddress != "") {
+      if (emailAddressPattern.test(emailAddress)) {
+        $("#emailAddressNote").html("You have filled in this field properly!");
+        $("#emailAddressNote").removeClass("text-danger");
+        $("#emailAddressNote").addClass("text-success");
+      } 
+      else {
+        errorCounter++;
+        $("#emailAddressNote").html("You have not fill in this field properly. Example: 1james.caa1n@3mail.co.us");
+        $("#emailAddressNote").removeClass("text-success");
+        $("#emailAddressNote").addClass("text-danger");
+      }
+    } 
+    else {
+      errorCounter++;
+      $("#emailAddressNote").html("This field must not be left blank!");
+      $("#emailAddressNote").removeClass("text-success");
+      $("#emailAddressNote").addClass("text-danger");
+    }
+    if (username != "") {
+      if (credentialPattern.test(username)) {
+        $("#usernameNote").html("You have filled in this field properly!");
+        $("#usernameNote").removeClass("text-danger");
+        $("#usernameNote").addClass("text-success");
+      } 
+      else {
+        errorCounter++;
+        $("#usernameNote").html("You have not fill in this field properly. Example: s15iNatra");
+        $("#usernameNote").removeClass("text-success");
+        $("#usernameNote").addClass("text-danger");
+      }
+    } 
+    else {
+      errorCounter++;
+      $("#usernameNote").html("This field must not be left blank!");
+      $("#usernameNote").removeClass("text-success");
+      $("#usernameNote").addClass("text-danger");
+    }
+    if (password != "") {
+      if (credentialPattern.test(password)) {
+        $("#passwordNote").html("You have filled in this field properly!");
+        $("#passwordNote").removeClass("text-danger");
+        $("#passwordNote").addClass("text-success");
+      }
+       else {
+        errorCounter++;
+        $("#passwordNote").html("You have not fill in this field properly. Example: rickleS26");
+        $("#passwordNote").removeClass("text-success");
+        $("#passwordNote").addClass("text-danger");
+      }
+    } 
+    else {
+      errorCounter++;
+      $("#passwordNote").html("This field must not be left blank!");
+      $("#passwordNote").removeClass("text-success");
+      $("#passwordNote").addClass("text-danger");
+    }
+    if (confirmPassword==password){
+        $("#confirmPasswordNote").html("Passwords match!");
+        $("#confirmPasswordNote").removeClass("text-danger");
+        $("#confirmPasswordNote").addClass("text-success");
+    }
+    else {
+      errorCounter++;
+      $("#confirmPasswordNote").html("Passwords do not match!");
+        $("#confirmPasswordNote").removeClass("text-success");
+        $("#confirmPasswordNote").addClass("text-danger");
+    }
+    if(errorCounter==0){
+      let data = {
+        firstName : firstName,
+        lastName : lastName,
+        emailAddress : emailAddress,
+        username : username,
+        password : password,
+        confirmPassword : confirmPassword
+      }
+      postViaAjax('signingUp',signingUp,data);
+    }
+  });
+  function signingUp(jsonData){
+    if(!Array.isArray(jsonData.message)){
+      alert(jsonData.message);
+    }
+    else {
+      for(let i=0;i<jsonData.message.length;i++){
+        alert(jsonData.message[i]);
+      }
+    }
+    if(jsonData.message=="You have signed up successfully!"){
+      window.location.href="index.php";
+    }
+  }
+}
+if (window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=contribute") {
+  $("#contribute").click(function(){
+    let carName = $("#carName").val();
+    let carEpoch = $("#carEpoch").val();
+    let carManufacturer = $("#carManufacturer").val();
+    let carImage = $("#carImage")[0].files[0];
+    let carImageName = $("#carImage").val().toLowerCase();
+    let allowedFileExtensions = /(.*?)\.(jpg|jpeg)$/;
+    let errorCounter = 0;
+    if(carImage){
+      if(allowedFileExtensions.test(carImageName)){
+        if(carImage.size>=32000){
+          errorCounter++;
+          $("#carImageNote").html("Your image is too large. Upload only an image up to 32KB.");
+          $("#carImageNote").removeClass("text-success");
+          $("#carImageNote").addClass("text-danger");
+        }
+      }
+      else {
+        errorCounter++;
+        $("#carImageNote").html("You have not uploaded allowed type of file. Upload only a JPEG image.");
+        $("#carImageNote").removeClass("text-success");
+        $("#carImageNote").addClass("text-danger");
+      }
+    }
+    else {
+      errorCounter++;
+      $("#carImageNote").html("You have to upload image!");
+      $("#carImageNote").removeClass("text-success");
+      $("#carImageNote").addClass("text-danger");
+    }
+    if(errorCounter==0){
+      let data = new FormData();
+      data.append("carName",carName);
+      data.append("carEpoch",carEpoch);
+      data.append("carManufacturer",carManufacturer);
+      data.append("carImage",carImage);
+      postFormDataViaAjax("contributing",contributing,data);
+    }
+  });
+  function contributing(jsonData){
+    if(!Array.isArray(jsonData.message)){
+      alert(jsonData.message);
+    }
+    else {
+      for(let i=0;i<jsonData.message.length;i++){
+        alert(jsonData.message[i]);
+      }
+    }
+    if(jsonData.message=="You have made a contribution successfully!"){
+      window.location.href="index.php";
+    }
+  }
+}
+if (window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=reports"){
+  $("#downloadAnExcelFile").tooltip();
+  $("#downloadAnExcelFile").click(downloadAnExcelFileViaAjax);
+  function downloadAnExcelFileViaAjax(){
+    $.ajax({
+      method: 'post',
+      url: "models/exportReports.php",
+        success: function(response) {
+          setTimeout(function(){
+          let downloadLink = document.getElementById("downloadReports");
+          let excelFile = new Blob([response], {type: 'text/csv'});
+          downloadLink.href = URL.createObjectURL(excelFile);
+          downloadLink.download = 'reports.csv';
+          $("#excel").click();
+        },2000)
+      return;},
+        error: {function(xhr){
+          console.error(xhr);
+        }
+      }
+    });
+  }
+}
+if (window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=reports"||window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=crudReports") { 
+  $("#sizesLabel").click(function(e){
+      e.preventDefault();
+      $("#sizes").slideToggle("slow");
+    });
+  $("#manufacturersLabel").click(function(e){
+    e.preventDefault();
+    $("#manufacturers").slideToggle("slow");
+  });
+  $("#countriesLabel").click(function(e){
+    e.preventDefault();
+    $("#countries").slideToggle("slow");
+  });
+  $("#epochsLabel").click(function(e){
+    e.preventDefault();
+    $("#epochs").slideToggle("slow");
+  });
+  $("#searchByName").keyup(sendingSortingFilteringAndPagingParameters);
+  $("#sortingCategories").change(sendingSortingFilteringAndPagingParameters);
+  getViaAjax("showSizes",showSizes);
+  getViaAjax("showManufacturers",showManufacturers);
+  getViaAjax("showCountries",showCountries);
+  getViaAjax("showSortingCategories",showSortingCategories);
+  getViaAjax("showEpochs",showEpochs);
+  getViaAjax("showReportsAndPages",showReportsAndPages);
+  function showSizes(jsonData){
+    let writingSizes = "";
+    jsonData.forEach(size=>{
+      writingSizes+=`
+        <li>
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input sizes" type="checkbox" value="${size.id}" id="size${size.id}"/>
+            <label class="custom-control-label" for="size${size.id}"><h4>${size.sizeName}</h4></label>
+          </div>
+        </li>
+      `;
+    });
+    $("#sizes").html(writingSizes);
+    $(".sizes").click(sendingSortingFilteringAndPagingParameters);
+  }
+  function showManufacturers(jsonData){
+    let writingManufacturers = "";
+    jsonData.forEach(manufacturer=>{
+      writingManufacturers+=`
+        <li>
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input manufacturers" type="checkbox" value="${manufacturer.id}" id="manufacturer${manufacturer.id}"/>
+            <label class="custom-control-label" for="manufacturer${manufacturer.id}"><h4>${manufacturer.manufacturerName}</h4></label>
+          </div>
+        </li>
+      `;
+    });
+    $("#manufacturers").html(writingManufacturers);
+    $(".manufacturers").click(sendingSortingFilteringAndPagingParameters);
+  }
+  function showCountries(jsonData){
+    let writingCountries = "";
+    jsonData.forEach(country=>{
+      writingCountries+=`
+        <li>
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input countries" type="checkbox" value="${country.id}" id="country${country.id}"/>
+            <label class="custom-control-label" for="country${country.id}"><h4>${country.countryName}</h4></label>
+          </div>
+        </li>
+      `;
+    });
+    $("#countries").html(writingCountries);
+    $(".countries").click(sendingSortingFilteringAndPagingParameters);
+  }
+  function showEpochs(jsonData){
+    let writingEpochs = "";
+    jsonData.forEach(epoch=>{
+      writingEpochs+=`
+        <li>
+          <div class="custom-control custom-checkbox">
+            <input class="custom-control-input epochs" type="checkbox" value="${epoch.id}" id="epoch${epoch.id}"/>
+            <label class="custom-control-label" for="epoch${epoch.id}"><h4>${epoch.epochName}</h4></label>
+          </div>
+        </li>
+      `;
+    });
+    $("#epochs").html(writingEpochs);
+    $(".epochs").click(sendingSortingFilteringAndPagingParameters);
+  }
+  function showSortingCategories(jsonData){
+    let writingSortingCategories = "<option value='0'>Choose...</option>";
+    jsonData.forEach(sortingCategory=>{
+      writingSortingCategories+=`
+        <option value="${sortingCategory.id}" id="sortingCategory${sortingCategory.id}">${sortingCategory.name}</option>
+      `;
+    });
+    $("#sortingCategories").html(writingSortingCategories);
+  }
+  function showReportsAndPages(jsonData){
+    let writingReports = "";
+    let writingPages = "";
+    if(jsonData.reports.length==0){
+      alert("There are no results matching parameters you have provided!");
+    }
+    else{
+      jsonData.reports.forEach(report=>{
+          writingReports+=`
+            <div class="card col-12 col-lg-5 pl-0 pr-0 mb-3 blackBackgroundColor">
+              <img src="assets/img/${report.carThumbImage}" class="card-img-top" alt="${report.title}"/>
+              <div class="card-body pl-0 pr-0 pb-0">
+                <h3 class="card-title lightYellowColor text-center">${report.title}</h3>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item blackBackgroundColor lightYellowBorderTop">
+                    <h4 class="lightYellowColor float-left">Name:</h4>
+                    <h4 class="lightYellowColor float-right">${report.carName}</h4>
+                  </li>
+                  <li class="list-group-item blackBackgroundColor lightYellowBorderTop">
+                    <h4 class="lightYellowColor float-left">Manufacturer:</h4>
+                    <h4 class="lightYellowColor float-right">${report.manufacturerName}</h4>
+                  </li>
+                  <li class="list-group-item blackBackgroundColor lightYellowBorderTop">
+                    <h4 class="lightYellowColor float-left">Country:</h4>
+                    <h4 class="lightYellowColor float-right">${report.countryName}</h4>
+                  </li>
+                  <li class="list-group-item blackBackgroundColor lightYellowBorderTop">
+                    <h4 class="lightYellowColor float-left">Size:</h4>
+                    <h4 class="lightYellowColor float-right">${report.sizeName}</h4>
+                  </li>
+                  <li class="list-group-item blackBackgroundColor lightYellowBorderTop">
+                    <h4 class="lightYellowColor float-left">Epoch:</h4>
+                    <h4 class="lightYellowColor float-right">${report.epochName}</h4>
+                  </li>
+                </ul>
+              </div>`;
+              if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=reports"){
+              writingReports+=`
+              <div class="card-footer">
+                <button type="button" class="btn btn-primary w-100 lightYellowBackgroundColor blackColor" data-toggle="modal" data-target="#report${report.reportId}">Proceed!</button>
+              </div>
+            </div>
+              <div class="modal fade" id="report${report.reportId}" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                  <div class="modal-content lightYellowBackgroundColor">
+                    <div class="modal-header shadow">
+                      <h3 class="modal-title blackColor" id="staticBackdropLabel">${report.title}</h3>
+                      <button type="button" class="close blackColor" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <img src="assets/img/${report.carImage}" class="w-100 rounded" alt="${report.title}"/>
+                        <h4 class="lightYellowColor blackBackgroundColor mt-3 pl-3 pr-3">Report</h4>
+                        <p class="pl-3 pr-3 text-justify">${report.reportKernel}</p>
+                        <h4 class="lightYellowColor blackBackgroundColor pl-3 pr-3">Comments</h4>`;
+                        let data = {
+                          reportId : report.reportId
+                        }
+                        syncGetViaAjax("showComments",showComments,data);
+                        function showComments(commentsJsonData){
+                          if(commentsJsonData.length==0){
+                            writingReports+=`<h5 class="blackColor pl-3 pr-3">There are no comments about this car yet.</h5>`;
+                          }
+                          else {
+                            commentsJsonData.forEach((comment,key,commentsJsonData)=>{
+                              writingReports+=`
+                                <div class="d-flex justify-content-between ${key<commentsJsonData.length-1 ? "blackBorderBottom" : ""}">
+                                  <span class="pl-3 pr-3">
+                                    <h5 class="blackColor">${comment.username}</h5>
+                                    <small class="blackColor">${comment.dateAndTime}</small>
+                                  </span>
+                                  <p class="pl-3 pr-3">${comment.comment}</p>
+                                </div>`;
+                              });
+                            }
+                          }
+                          writingReports+=`
+                          <h4 class="lightYellowColor blackBackgroundColor pl-3 pr-3">Add a comment</h4>`;
+                          if(localStorage.getItem("signedIn")){
+                            writingReports+=`
+                            <form class="w-100 pl-3 pr-3 pb-3">
+                              <div class="form-group">
+                                <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="report${report.reportId}CommentField">
+                                <small id="report${report.reportId}CommentFieldNote" class="form-text text-center"></small>
+                              </div>
+                              <button type="button" class="btn btn-secondary w-100 blackBackgroundColor lightYellowColor postComment" data-id="${report.reportId}">Add a comment!</button>
+                            </form>`;
+                          }
+                            else {
+                              writingReports+=`<h5 class="blackColor pl-3 pr-3">You have to sign in to post comments.</h5>`;
+                            }
+                          writingReports+=`
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+            }
+        else {
+        writingReports+=`
+        <div class="card-footer d-flex">
+                <button type="button" class="btn btn-primary w-50 ml-2 mr-1 lightYellowBackgroundColor blackColor" data-toggle="modal" data-target="#report${report.reportId}">Proceed to update!</button>
+                <button type="button" class="btn btn-primary w-50 ml-2 ml-1 lightYellowBackgroundColor blackColor deleteReport" data-toggle="modal" data-id="${report.reportId}">Proceed to delete!</button>
+              </div>
+            </div>
+            <div class="modal fade" id="report${report.reportId}" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-scrollable modal-lg">
+                <div class="modal-content lightYellowBackgroundColor">
+                  <div class="modal-header shadow">
+                    <h3 class="modal-title blackColor" id="staticBackdropLabel">${report.title}</h3>
+                    <button type="button" class="close blackColor" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body p-0 d-flex flex-column">
+                    <form class="p-3">
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}CarImage"><h4 class="blackColor">Car image: </h4></label>
+                        <div class="form-group text-center w-50">
+                          <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="report${report.reportId}CarImage"/>
+                            <label for="report${report.reportId}CarImage" class="custom-file-label blackBackgroundColor lightYellowColor">Choose file</label>
+                          </div>
+                          <small id="report${report.reportId}CarImageNote" class="form-text"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}Title"><h4 class="blackColor">Title: </h4></label>
+                        <div class="form-group w-50">
+                          <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${report.title}" id="report${report.reportId}Title"/>
+                          <small id="report${report.reportId}TitleNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}CarName"><h4 class="blackColor">Car name: </h4></label>
+                        <div class="form-group w-50">
+                          <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${report.carName}" id="report${report.reportId}CarName"/>
+                          <small id="report${report.reportId}CarNameNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}Size"><h4 class="blackColor">Size: </h4></label>
+                        <div class="form-group w-50">
+                          <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${report.sizeName}" id="report${report.reportId}Size"/>
+                          <small id="report${report.reportId}SizeNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}Epoch"><h4 class="blackColor">Epoch: </h4></label>
+                        <div class="form-group w-50">
+                          <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="report${report.reportId}Epoch" value="${report.epochName}"/>
+                          <small id="report${report.reportId}EpochNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}Manufacturer"><h4 class="blackColor">Manufacturer: </h4></label>
+                        <div class="form-group w-50">
+                          <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="report${report.reportId}Manufacturer" value="${report.manufacturerName}"/>
+                          <small id="report${report.reportId}ManufacturerNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}Country"><h4 class="blackColor">Country: </h4></label>
+                        <div class="form-group w-50">
+                          <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="report${report.reportId}Country" value="${report.countryName}"/>
+                          <small id="report${report.reportId}CountryNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                      <div class="form-row">
+                        <label class="blackColor w-50" for="report${report.reportId}ReportKernel"><h4 class="blackColor">Report kernel: </h4></label>
+                        <div class="form-group w-50">
+                          <textarea class="form-control blackBackgroundColor lightYellowColor" id="report${report.reportId}ReportKernel">${report.reportKernel}</textarea>
+                          <small id="report${report.reportId}ReportKernelNote" class="form-text text-center"></small>
+                        </div>
+                      </div>
+                    </form>
+                    <h4 class="blackColor pl-3 pr-3">Comments</h4>
+                    `;
+                    let data = {
+                      reportId : report.reportId
+                    }
+                    syncGetViaAjax("showComments",showComments,data);
+                    function showComments(commentsJsonData){
+                      if(commentsJsonData.length==0){
+                        writingReports+=`<h5 class="blackColor p-3 blackBorderTop blackBorderBottom">There are no comments about this car yet.</h5>`;
+                      }
+                      else {
+                        commentsJsonData.forEach(comment=>{
+                          writingReports+=`
+                            <div class="d-flex justify-content-between blackBorderTop blackBorderBottom">
+                              <span class="p-3">
+                                <h5 class="blackColor">${comment.username}</h5>
+                                <small class="blackColor">${comment.dateAndTime}</small>
+                              </span>
+                              <span class="d-flex justify-content-between">
+                                <p class="p-3">${comment.comment}</p>
+                                <button type="button" class="btn btn-secondary lightYellowColor blackBackgroundColorWithoutImportant trashCan mt-1 mb-1" data-toggle="tooltip" data-placement="top" title="If you think that this comment is inappropriate, click on trash can bellow to put in the line to delete. Red button means that comment is in the to delete." data-id="${comment.commentId}">
+                                  <span class="bi bi-trash-fill"></span>
+                                </button>
+                              </span>
+                            </div>`;
+                        });
+                      }
+                    }
+                    writingReports+=`
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary w-100 blackBackgroundColor lightYellowColor updateReport" data-id="${report.reportId}">Confirm changes!</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+        `;
+        }
+      });
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=crudReports"){
+      writingReports+=`
+      <div class="modal fade" id="newReport" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+          <div class="modal-content lightYellowBackgroundColor">
+            <div class="modal-header shadow">
+              <h3 class="modal-title blackColor" id="staticBackdropLabel">New report</h3>
+              <button type="button" class="close blackColor" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body p-3 d-flex flex-column">
+              <form>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportCarImage"><h4 class="blackColor">Car image: </h4></label>
+                  <div class="form-group text-center w-50">
+                    <div class="custom-file">
+                      <input type="file" class="custom-file-input" id="newReportCarImage"/>
+                      <label for="newReportCarImage" class="custom-file-label blackBackgroundColor lightYellowColor">Choose file</label>
+                    </div>
+                    <small id="newReportCarImageNote" class="form-text"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportTitle"><h4 class="blackColor">Title: </h4></label>
+                  <div class="form-group w-50">
+                    <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newReportTitle"/>
+                    <small id="newReportTitleNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportCarName"><h4 class="blackColor">Car name: </h4></label>
+                  <div class="form-group w-50">
+                    <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newReportCarName"/>
+                    <small id="newReportCarNameNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportSize"><h4 class="blackColor">Size: </h4></label>
+                  <div class="form-group w-50">
+                    <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newReportSize"/>
+                    <small id="newReportSizeNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportEpoch"><h4 class="blackColor">Epoch: </h4></label>
+                  <div class="form-group w-50">
+                    <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newReportEpoch"/>
+                    <small id="newReportEpochNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportManufacturer"><h4 class="blackColor">Manufacturer: </h4></label>
+                  <div class="form-group w-50">
+                    <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newReportManufacturer"/>
+                    <small id="newReportManufacturerNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportCountry"><h4 class="blackColor">Country: </h4></label>
+                  <div class="form-group w-50">
+                    <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newReportCountry"/>
+                    <small id="newReportCountryNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="blackColor w-50" for="newReportReportKernel"><h4 class="blackColor">Kernel: </h4></label>
+                  <div class="form-group w-50">
+                    <textarea class="form-control blackBackgroundColor lightYellowColor" id="newReportReportKernel"></textarea>
+                    <small id="newReportReportKernelNote" class="form-text text-center"></small>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary w-100 blackBackgroundColor lightYellowColor" id="insertReport">Add a report!</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }
+    let numberOfPages = jsonData.pages;
+    for(let i=0;i<numberOfPages;i++){
+      writingPages+=`
+        <li class="page-item">
+          <button type="button" class="blackBackgroundColor lightYellowColor lightYellowBorder pageButtons pb-2 pr-3 pl-3 pt-2 rounded" data-limit="${i}">${i+1}</button>
+        </li>
+      `;
+    }
+    $("#reports").html(writingReports);
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=reports"){
+      $(".postComment").click(function(){
+        let reportId = $(this).data('id');
+        let comment = $("#report"+reportId+"CommentField").val();
+        if(comment==""){
+          $("#report"+reportId+"CommentFieldNote").html("This field must not be left blank!");
+          $("#report"+reportId+"CommentFieldNote").addClass("text-danger");
+        }
+        else {
+          let data = {
+            reportId : reportId,
+            comment : comment
+          };
+          postViaAjax("postingComment",postingComment,data);
+        }
+      });
+      function postingComment(response){
+        alert(response.message);
+        window.location.href="index.php?page=reports";
+      }
+    }
+    if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=crudReports"){
+      $('.trashCan').tooltip();
+      $(".trashCan").click(function() {
+        $(this).toggleClass('bg-danger');  
+      });
+      $(".updateReport").click(function(){
+        let reportId = $(this).data('id');
+        let carImage = $("#report"+reportId+"CarImage")[0].files[0];
+        let carImageName = $("#report"+reportId+"CarImage").val().toLowerCase();
+        let allowedFileExtensions = /(.*?)\.(jpg|jpeg)$/;
+        let title = $("#report"+reportId+"Title").val();
+        let carName = $("#report"+reportId+"CarName").val();
+        let epoch = $("#report"+reportId+"Epoch").val();
+        let size = $("#report"+reportId+"Size").val();
+        let manufacturer = $("#report"+reportId+"Manufacturer").val();
+        let country = $("#report"+reportId+"Country").val();
+        let reportKernel = $("#report"+reportId+"ReportKernel").val();
+        let commentsToDelete = $(".trashCan.bg-danger");
+        let commentsToDeleteArray = Array.from(commentsToDelete);
+        let commentLineToDelete = [];
+        commentsToDeleteArray.forEach(comment=>{
+          commentLineToDelete.push(comment.getAttribute('data-id'));
+        });
+        let commentLineToDeleteString = commentLineToDelete.join(",");
+        let errorCounter = 0;
+        if(carImage){
+          if(allowedFileExtensions.test(carImageName)){
+            if(carImage.size<32000){
+              $("#report"+reportId+"CarImageNote").html("You have filled in this field properly!");
+              $("#report"+reportId+"CarImageNote").removeClass("text-danger");
+              $("#report"+reportId+"CarImageNote").addClass("text-success");
+            }
+            else {
+              errorCounter++;
+              $("#report"+reportId+"CarImageNote").html("Your image is too large. Upload only an image up to 32KB.");
+              $("#report"+reportId+"CarImageNote").removeClass("text-success");
+              $("#report"+reportId+"CarImageNote").addClass("text-danger");
+            }
+          }
+          else {
+            errorCounter++;
+            $("#report"+reportId+"CarImageNote").html("You have not uploaded allowed type of file. Upload only a JPEG image.");
+            $("#report"+reportId+"CarImageNote").removeClass("text-success");
+            $("#report"+reportId+"CarImageNote").addClass("text-danger");
+          }
+        }
+        if(title!=""){
+          $("#report"+reportId+"TitleNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"TitleNote").removeClass("text-danger");
+          $("#report"+reportId+"TitleNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"TitleNote").html("This field must not be left blank!");
+          $("#report"+reportId+"TitleNote").removeClass("text-success");
+          $("#report"+reportId+"TitleNote").addClass("text-danger");
+        }
+        if(carName!=""){
+          $("#report"+reportId+"CarNameNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"CarNameNote").removeClass("text-danger");
+          $("#report"+reportId+"CarNameNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"CarNameNote").html("This field must not be left blank!");
+          $("#report"+reportId+"CarNameNote").removeClass("text-success");
+          $("#report"+reportId+"CarNameNote").addClass("text-danger");
+        }
+        if(epoch!=""){
+          $("#report"+reportId+"EpochNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"EpochNote").removeClass("text-danger");
+          $("#report"+reportId+"EpochNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"EpochNote").html("This field must not be left blank!");
+          $("#report"+reportId+"EpochNote").removeClass("text-success");
+          $("#report"+reportId+"EpochNote").addClass("text-danger");
+        }
+        if(size!=""){
+          $("#report"+reportId+"SizeNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"SizeNote").removeClass("text-danger");
+          $("#report"+reportId+"SizeNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"SizeNote").html("This field must not be left blank!");
+          $("#report"+reportId+"SizeNote").removeClass("text-success");
+          $("#report"+reportId+"SizeNote").addClass("text-danger");
+        }
+        if(manufacturer!=""){
+          $("#report"+reportId+"ManufacturerNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"ManufacturerNote").removeClass("text-danger");
+          $("#report"+reportId+"ManufacturerNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"ManufacturerNote").html("This field must not be left blank!");
+          $("#report"+reportId+"ManufacturerNote").removeClass("text-success");
+          $("#report"+reportId+"ManufacturerNote").addClass("text-danger");
+        }
+        if(country!=""){
+          $("#report"+reportId+"CountryNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"CountryNote").removeClass("text-danger");
+          $("#report"+reportId+"CountryNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"CountryNote").html("This field must not be left blank!");
+          $("#report"+reportId+"CountryNote").removeClass("text-success");
+          $("#report"+reportId+"CountryNote").addClass("text-danger");
+        }
+        if(reportKernel!=""){
+          $("#report"+reportId+"ReportKernelNote").html("You have filled in this field properly!");
+          $("#report"+reportId+"ReportKernelNote").removeClass("text-danger");
+          $("#report"+reportId+"ReportKernelNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#report"+reportId+"ReportKernelNote").html("This field must not be left blank!");
+          $("#report"+reportId+"ReportKernelNote").removeClass("text-success");
+          $("#report"+reportId+"ReportKernelNote").addClass("text-danger");
+        }
+        if(errorCounter==0){
+          let data = new FormData();
+          data.append("reportId",reportId);
+          data.append("carImage",carImage);
+          data.append("title",title);
+          data.append("carName",carName);
+          data.append("epoch",epoch);
+          data.append("size",size);
+          data.append("manufacturer",manufacturer);
+          data.append("country",country);
+          data.append("reportKernel",reportKernel);
+          data.append("commentLineToDeleteString",commentLineToDeleteString);
+          postFormDataViaAjax("changingReport",changingReport,data);
+        }
+      });
+      $("#insertReport").click(function(){
+        let carImage = $("#newReportCarImage")[0].files[0];
+        let carImageName = $("#newReportCarImage").val().toLowerCase();
+        let allowedFileExtensions = /(.*?)\.(jpg|jpeg)$/;
+        let title = $("#newReportTitle").val();
+        let carName = $("#newReportCarName").val();
+        let epoch = $("#newReportEpoch").val();
+        let size = $("#newReportSize").val();
+        let manufacturer = $("#newReportManufacturer").val();
+        let country = $("#newReportCountry").val();
+        let reportKernel = $("#newReportReportKernel").val();
+        let errorCounter = 0;
+        if(carImage){
+          if(allowedFileExtensions.test(carImageName)){
+            if(carImage.size<32000){
+              $("#newReportCarImageNote").html("You have filled in this field properly!");
+              $("#newReportCarImageNote").removeClass("text-danger");
+              $("#newReportCarImageNote").addClass("text-success");
+            }
+            else {
+              errorCounter++;
+              $("#newReportCarImageNote").html("Your image is too large. Upload only an image up to 32KB.");
+              $("#newReportCarImageNote").removeClass("text-success");
+              $("#newReportCarImageNote").addClass("text-danger");
+            }
+          }
+          else {
+            errorCounter++;
+            $("#newReportCarImageNote").html("You have not uploaded allowed type of file. Upload only a JPEG image.");
+            $("#newReportCarImageNote").removeClass("text-success");
+            $("#newReportCarImageNote").addClass("text-danger");
+          }
+        }
+        else {
+          errorCounter++;
+          $("#newReportCarImageNote").html("You have not uploaded an image.");
+          $("#newReportCarImageNote").removeClass("text-success");
+          $("#newReportCarImageNote").addClass("text-danger");
+        }
+        if(title!=""){
+          $("#newReportTitleNote").html("You have filled in this field properly!");
+          $("#newReportTitleNote").removeClass("text-danger");
+          $("#newReportTitleNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportTitleNote").html("This field must not be left blank!");
+          $("#newReportTitleNote").removeClass("text-success");
+          $("#newReportTitleNote").addClass("text-danger");
+        }
+        if(carName!=""){
+          $("#newReportCarNameNote").html("You have filled in this field properly!");
+          $("#newReportCarNameNote").removeClass("text-danger");
+          $("#newReportCarNameNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportCarNameNote").html("This field must not be left blank!");
+          $("#newReportCarNameNote").removeClass("text-success");
+          $("#newReportCarNameNote").addClass("text-danger");
+        }
+        if(epoch!=""){
+          $("#newReportEpochNote").html("You have filled in this field properly!");
+          $("#newReportEpochNote").removeClass("text-danger");
+          $("#newReportEpochNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportEpochNote").html("This field must not be left blank!");
+          $("#newReportEpochNote").removeClass("text-success");
+          $("#newReportEpochNote").addClass("text-danger");
+        }
+        if(size!=""){
+          $("#newReportSizeNote").html("You have filled in this field properly!");
+          $("#newReportSizeNote").removeClass("text-danger");
+          $("#newReportSizeNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportSizeNote").html("This field must not be left blank!");
+          $("#newReportSizeNote").removeClass("text-success");
+          $("#newReportSizeNote").addClass("text-danger");
+        }
+        if(manufacturer!=""){
+          $("#newReportManufacturerNote").html("You have filled in this field properly!");
+          $("#newReportManufacturerNote").removeClass("text-danger");
+          $("#newReportManufacturerNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportManufacturerNote").html("This field must not be left blank!");
+          $("#newReportManufacturerNote").removeClass("text-success");
+          $("#newReportManufacturerNote").addClass("text-danger");
+        }
+        if(country!=""){
+          $("#newReportCountryNote").html("You have filled in this field properly!");
+          $("#newReportCountryNote").removeClass("text-danger");
+          $("#newReportCountryNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportCountryNote").html("This field must not be left blank!");
+          $("#newReportCountryNote").removeClass("text-success");
+          $("#newReportCountryNote").addClass("text-danger");
+        }
+        if(reportKernel!=""){
+          $("#newReportReportKernelNote").html("You have filled in this field properly!");
+          $("#newReportReportKernelNote").removeClass("text-danger");
+          $("#newReportReportKernelNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newReportReportKernelNote").html("This field must not be left blank!");
+          $("#newReportReportKernelNote").removeClass("text-success");
+          $("#newReportReportKernelNote").addClass("text-danger");
+        }
+        if(errorCounter==0){
+          let data = new FormData();
+          data.append("carImage",carImage);
+          data.append("title",title);
+          data.append("carName",carName);
+          data.append("epoch",epoch);
+          data.append("size",size);
+          data.append("manufacturer",manufacturer);
+          data.append("country",country);
+          data.append("reportKernel",reportKernel);
+          postFormDataViaAjax("insertingReport",insertingReport,data);
+        }
+      });
+      $(".deleteReport").click(function(){
+        let sure = confirm("Are you sure about deleting this report?");
+        if(sure){
+          let reportId = $(this).data('id');
+          let data = {
+            reportId : reportId
+          }
+          postViaAjax("deletingReport",deletingReport,data);
+        }
+      });
+    }
+    $("#pages").html(writingPages);
+    $(".pageButtons").click(sendingSortingFilteringAndPagingParameters);
+  }
+  function sendingSortingFilteringAndPagingParameters(){
+    let sizes = $(".sizes:checked");
+    let manufacturers = $(".manufacturers:checked");
+    let countries = $(".countries:checked");
+    let epochs = $(".epochs:checked");
+    let name = $("#searchByName").val().toUpperCase();
+    let sortingCategoryId = $("#sortingCategories").val();
+    let limit = $(this).data('limit');
+    let sizeIds = [];
+    let manufacturerIds = [];
+    let countryIds = [];
+    let epochIds = [];
+    if(sizes.length!=0){
+      for(let i=0;i<sizes.length;i++){
+         sizeIds.push(sizes[i].value);
+      }
+    }
+    let sizeIdsString = sizeIds.join(",");
+    if(manufacturers.length!=0){
+      for(let i=0;i<manufacturers.length;i++){
+        manufacturerIds.push(manufacturers[i].value);
+      }
+    }
+    let manufacturerIdsString = manufacturerIds.join(",");
+    if(countries.length!=0){
+      for(let i=0;i<countries.length;i++){
+        countryIds.push(countries[i].value);
+      }
+    }
+    let countryIdsString = countryIds.join(",");
+    if(epochs.length!=0){
+      for(let i=0;i<epochs.length;i++){
+        epochIds.push(epochs[i].value);
+      }
+    }
+    let epochIdsString = epochIds.join(",");
+    let data = {
+      sizeIdsString : sizeIdsString,
+      manufacturerIdsString : manufacturerIdsString,
+      countryIdsString : countryIdsString,
+      epochIdsString : epochIdsString,
+      name : name,
+      sortingCategoryId : sortingCategoryId,
+      limit: limit
+    }
+    getViaAjax("showReportsAndPages",showReportsAndPages,data);
+  }
+}
+if(window.location =="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=crudReports"){
+  function changingReport(jsonData){
+    if(!Array.isArray(jsonData.message)){
+      alert(jsonData.message);
+    }
+    else {
+      for(let i=0;i<jsonData.message.length;i++){
+        alert(jsonData.message[i]);
+      }
+    }
+    if(jsonData.message=="You have changed a report successfully!"){
+      window.location.href="index.php?page=crudReports";
+    }
+  }
+  function insertingReport(jsonData){
+    if(!Array.isArray(jsonData.message)){
+      alert(jsonData.message);
+    }
+    else {
+      for(let i=0;i<jsonData.message.length;i++){
+        alert(jsonData.message[i]);
+      }
+    }
+    if(jsonData.message=="You have inserted a report successfully!"){
+      window.location.href="index.php?page=crudReports";
+    }
+  }
+  function deletingReport(jsonData){
+    alert(jsonData.message);
+    window.location.href="index.php?page=crudReports";
+  }
+}
+if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=author"){
+  getViaAjax("showAuthorInformation",showAuthorInformation);
+  function showAuthorInformation(jsonData){
+    let writingAuthorInformation = "";
+    jsonData.forEach((pieceOfInformation,key)=>{
+          if(pieceOfInformation.pieceOfInformationValue==null){
+            let data = {
+              pieceOfInformationId : pieceOfInformation.pieceOfInformationId
+            };
+            syncGetViaAjax("showAuthorInformation2",showAuthorInformation2,data);
+            function showAuthorInformation2(jsonData2){
+              jsonData2.forEach((pieceOfInformation2,key2,jsonData2)=>{
+                if(key2==0){
+                  writingAuthorInformation+=`
+                  <tr class="${parseInt(key)%2==0 ? "lightYellowBackgroundColor blackColor" : "blackBackgroundColor lightYellowColor"}">
+                    <td class="p-3" rowspan="${jsonData2.length}"><h4>${pieceOfInformation.pieceOfInformationLabel}:</h4></td>
+                    <td class="float-right p-3"><h4>${pieceOfInformation2.pieceOfInformation2Value}</h4></td>
+                  </tr>`;
+                }
+                else {
+                  writingAuthorInformation+=`
+                  <tr class="${parseInt(key)%2==0 ? "lightYellowBackgroundColor blackColor" : "blackBackgroundColor lightYellowColor"}">
+                    <td class="float-right p-3"><h4>${pieceOfInformation2.pieceOfInformation2Value}</h4></td>
+                  </tr>`;
+                }
+              });
+            }
+          }
+          else {
+            writingAuthorInformation+=`
+              <tr class="${parseInt(key)%2==0 ? "lightYellowBackgroundColor blackColor" : "blackBackgroundColor lightYellowColor"}">
+                <td class="p-3"><h4>${pieceOfInformation.pieceOfInformationLabel}:</h4></td>
+                <td class="float-right p-3"><h4>${pieceOfInformation.pieceOfInformationValue}</h4></td>
+              </tr>`;
+          }
+    });
+    $("#authorInformation").html(writingAuthorInformation);
+  }
+}
+if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=dashboard"){
+  $('#crudReports').tooltip();
+  $('#crudUsers').tooltip();
+  $('#statistics').tooltip();
+}
+if(window.location=="http://127.0.0.1/MarkoStojanovicVinport/index.php?page=crudUsers"){
+  getViaAjax("showUsers",showUsers);
+  function showUsers(jsonData){
+    let writingUsers = "<thead><th class='p-3 text-center'><h3 class='blackColor'>Username</h3></th><th class='p-3 text-center'><h3 class='blackColor'>Change</h3></th><th class='p-3 text-center'><h3 class='blackColor'>Delete</h3></th></thead><tbody>";
+    let writingUserModals = "";
+    jsonData.forEach((user,key)=>{
+      writingUsers+=`
+        <tr>
+          <td class="shadow p-3 ${parseInt(key)%2==0 ? "lightYellowBackgroundColor blackColor" : "blackBackgroundColor lightYellowColor"}">${user.username}</td>
+          <td><button type="button" class="p-3 btn btn-secondary w-100 blackBackgroundColor lightYellowColor" data-id="${user.userId}" data-toggle="modal" data-target="#user${user.userId}ChangingModal"><span class="bi bi-pencil-square"></span></button></td>
+          <td><button type="button" class="p-3 btn btn-secondary trashCan w-100 blackBackgroundColorWithoutImportant lightYellowColor" data-toggle="tooltip" data-placement="top" title="If you want to delete this user, click on trash can bellow to put in the line to delete. Red button means that user is in the to delete." data-id="${user.userId}"><span class="bi bi-trash-fill"></span></button></td>
+        </tr>`;
+        writingUserModals+=`
+          <div class="modal fade" id="user${user.userId}ChangingModal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg">
+              <div class="modal-content lightYellowBackgroundColor">
+                <div class="modal-header shadow">
+                  <h4 class="modal-title blackColor" id="staticBackdropLabel">${user.username}</h4>
+                  <button type="button" class="close blackColor" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body p-3 d-flex flex-column">
+                  <form>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}FirstName"><h5 class='blackColor'>First name: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="user${user.userId}FirstName" value="${user.firstName}"/>
+                        <small id="user${user.userId}FirstNameNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}LastName"><h5 class='blackColor'>Last name: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${user.lastName}" id="user${user.userId}LastName"/>
+                        <small id="user${user.userId}LastNameNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}EmailAddress"><h5 class='blackColor'>Email address: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${user.emailAddress}" id="user${user.userId}EmailAddress"/>
+                        <small id="user${user.userId}EmailAddressNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}Username"><h5 class='blackColor'>Username: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${user.username}" id="user${user.userId}Username"/>
+                        <small id="user${user.userId}UsernameNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}Password"><h5 class='blackColor'>Password: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="password" class="form-control blackBackgroundColor lightYellowColor" value="${user.password}" id="user${user.userId}Password"/>
+                        <small id="user${user.userId}PasswordNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}Role"><h5 class='blackColor'>Role: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${user.roleName}" id="user${user.userId}Role"/>
+                        <small id="user${user.userId}RoleNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                    <div class="form-row">
+                      <label class="blackColor w-50" for="user${user.userId}Locked"><h5 class='blackColor'>Locked: </h5></label>
+                      <div class="form-group w-50">
+                        <input type="text" class="form-control blackBackgroundColor lightYellowColor" value="${user.locked==null ? "No" : "Yes" }" id="user${user.userId}Locked"/>
+                        <small id="user${user.userId}LockedNote" class="form-text text-center"></small>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary w-100 blackBackgroundColor lightYellowColor changeUser" data-id="${user.userId}">Change user!</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+    });
+    writingUsers+="</tbody><tfoot><tr><td colspan='2'><button type='button' class='p-3 btn btn-primary mb-3 w-100 blackBackgroundColor lightYellowColor' data-toggle='modal' data-target='#newUser'>Proceed to add an user!</button></td><td><button type='button' class='p-3 btn btn-primary w-100 mb-3 blackBackgroundColor lightYellowColor' id='deleteUsers'>Delete users</button></td></tr></tfoot>";
+    $("#users").html(writingUsers);
+    writingUserModals+=`
+      <div class="modal fade" id="newUser" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content lightYellowBackgroundColor">
+          <div class="modal-header shadow">
+            <h4 class="modal-title blackColor" id="staticBackdropLabel">New user</h4>
+            <button type="button" class="close blackColor" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body p-3 d-flex flex-column">
+            <form>
+              <div class="form-row">
+                <label class="blackColor w-50" for="newUserFirstName"><h5 class='blackColor'>First name: </h5></label>
+                <div class="form-group w-50">
+                  <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newUserFirstName"/>
+                  <small id="newUserFirstNameNote" class="form-text text-center"></small>
+                </div>
+              </div>
+              <div class="form-row">
+                <label class="blackColor w-50" for="newUserLastName"><h5 class='blackColor'>Last name: </h5></label>
+                <div class="form-group w-50">
+                  <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newUserLastName"/>
+                  <small id="newUserLastNameNote" class="form-text text-center"></small>
+                </div>
+              </div>
+              <div class="form-row">
+                <label class="blackColor w-50" for="newUserEmailAddress"><h5 class='blackColor'>Email address: </h5></label>
+                <div class="form-group w-50">
+                  <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newUserEmailAddress"/>
+                  <small id="newUserEmailAddressNote" class="form-text text-center"></small>
+                </div>
+              </div>
+              <div class="form-row">
+                <label class="blackColor w-50" for="newUserUsername"><h5 class='blackColor'>Username: </h5></label>
+                <div class="form-group w-50">
+                  <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newUserUsername"/>
+                  <small id="newUserUsernameNote" class="form-text text-center"></small>
+                </div>
+              </div>
+              <div class="form-row">
+                <label class="blackColor w-50" for="newUserPassword"><h5 class='blackColor'>Password: </h5></label>
+                <div class="form-group w-50">
+                  <input type="password" class="form-control blackBackgroundColor lightYellowColor" id="newUserPassword"/>
+                  <small id="newUserPasswordNote" class="form-text text-center"></small>
+                </div>
+              </div>
+              <div class="form-row">
+                <label class="blackColor w-50" for="newUserRole"><h5 class='blackColor'>Role: </h5></label>
+                <div class="form-group w-50">
+                  <input type="text" class="form-control blackBackgroundColor lightYellowColor" id="newUserRole"/>
+                  <small id="newUserRoleNote" class="form-text text-center"></small>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="addingUser" class="btn btn-secondary w-100 blackBackgroundColor lightYellowColor">Add an user!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    `;
+    $("#userModals").html(writingUserModals);
+    $('.trashCan').tooltip();
+    $(".trashCan").click(function() {
+      $(this).toggleClass('bg-danger');  
+    });
+    $("#deleteUsers").click(function(){
+      let usersToDelete = $(".trashCan.bg-danger");
+      if(usersToDelete.length!=0){
+        let usersToDeleteArray = Array.from(usersToDelete);
+        let userLineToDelete = [];
+        usersToDeleteArray.forEach(user=>{
+          userLineToDelete.push(user.getAttribute('data-id'));
+        });
+        let userLineToDeleteString = userLineToDelete.join(",");
+        let data = {
+          userLineToDeleteString : userLineToDeleteString
+        }
+        postViaAjax("deletingUsers",deletingUsers,data);
+      }
+      else {
+        alert("You have not put any users in the line to delete!");
+      }
+    });
+    $("#addingUser").click(function(){
+      let firstName = $("#newUserFirstName").val();
+      let lastName = $("#newUserLastName").val();
+      let emailAddress = $("#newUserEmailAddress").val();
+      let username = $("#newUserUsername").val();
+      let password = $("#newUserPassword").val();
+      let role = $("#newUserRole").val();
+      let credentialPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,50}$/;
+      let namePattern = /^[A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+([ ][A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+)*$/;
+      let emailAddressPattern = /^(?=.{6,30}@)[0-9a-z]+(?:\.[0-9a-z]+)*@[a-z0-9]{2,}(?:\.[a-z]{2,})+$/;
+      let errorCounter = 0;
+      if(firstName!=""){
+        if(namePattern.test(firstName)){
+          $("#newUserFirstNameNote").html("You have filled in this field properly!");
+          $("#newUserFirstNameNote").removeClass("text-danger");
+          $("#newUserFirstNameNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newUserFirstNameNote").html("You have not fill in this field properly. Example: Al McKay");
+          $("#newUserFirstNameNote").removeClass("text-success");
+          $("#newUserFirstNameNote").addClass("text-danger");
+        }
+      }
+      else {
+        errorCounter++;
+        $("#newUserFirstNameNote").html("This field must not be left blank!");
+        $("#newUserFirstNameNote").removeClass("text-success");
+        $("#newUserFirstNameNote").addClass("text-danger");
+      }
+      if(lastName!=""){
+        if(namePattern.test(lastName)){
+          $("#newUserLastNameNote").html("You have filled in this field properly!");
+          $("#newUserLastNameNote").removeClass("text-danger");
+          $("#newUserLastNameNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#newUserLastNameNote").html("You have not fill in this field properly. Example: O'Bryant Junior");
+          $("#newUserLastNameNote").removeClass("text-success");
+          $("#newUserLastNameNote").addClass("text-danger");
+        }
+      }
+      else {
+        errorCounter++;
+        $("#newUserLastNameNote").html("This field must not be left blank!");
+        $("#newUserLastNameNote").removeClass("text-success");
+        $("#newUserLastNameNote").addClass("text-danger");
+      }
+      if (emailAddress != "") {
+        if (emailAddressPattern.test(emailAddress)) {
+          $("#newUserEmailAddressNote").html("You have filled in this field properly!");
+          $("#newUserEmailAddressNote").removeClass("text-danger");
+          $("#newUserEmailAddressNote").addClass("text-success");
+        } 
+        else {
+          errorCounter++;
+          $("#newUserEmailAddressNote").html("You have not fill in this field properly. Example: 1james.caa1n@3mail.co.us");
+          $("#newUserEmailAddressNote").removeClass("text-success");
+          $("#newUserEmailAddressNote").addClass("text-danger");
+        }
+      } 
+      else {
+        errorCounter++;
+        $("#newUserEmailAddressNote").html("This field must not be left blank!");
+        $("#newUserEmailAddressNote").removeClass("text-success");
+        $("#newUserEmailAddressNote").addClass("text-danger");
+      }
+      if (username != "") {
+        if (credentialPattern.test(username)) {
+          $("#newUserUsernameNote").html("You have filled in this field properly!");
+          $("#newUserUsernameNote").removeClass("text-danger");
+          $("#newUserUsernameNote").addClass("text-success");
+        } 
+        else {
+          errorCounter++;
+          $("#newUserUsernameNote").html("You have not fill in this field properly. Example: s15iNatra");
+          $("#newUserUsernameNote").removeClass("text-success");
+          $("newUserUsernameNote").addClass("text-danger");
+        }
+      } 
+      else {
+        errorCounter++;
+        $("#newUserUsernameNote").html("This field must not be left blank!");
+        $("#newUserUsernameNote").removeClass("text-success");
+        $("#newUserUsernameNote").addClass("text-danger");
+      }
+      if (password != "") {
+        $("#newUserPasswordNote").html("You have filled in this field properly!");
+        $("#newUserPasswordNote").removeClass("text-danger");
+        $("#newUserPasswordNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#newUserPasswordNote").html("This field must not be left blank!");
+        $("#newUserPasswordNote").removeClass("text-success");
+        $("#newUserPasswordNote").addClass("text-danger");
+      }
+      if(role!=""){
+        $("#newUserRoleNote").html("You have filled in this field properly!");
+        $("#newUserRoleNote").removeClass("text-danger");
+        $("#newUserRoleNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#newUserRoleNote").html("This field must not be left blank!");
+        $("#newUserRoleNote").removeClass("text-success");
+        $("#newUserRoleNote").addClass("text-danger");
+      }
+      if(errorCounter==0){
+        let data = {
+          firstName : firstName,
+          lastName : lastName,
+          emailAddress : emailAddress,
+          username : username,
+          password : password,
+          role : role
+        }
+        postViaAjax('addingUser',addingUser,data);
+      }
+    });
+    $(".changeUser").click(function(){
+      let userId = $(this).data('id');
+      let firstName = $("#user"+userId+"FirstName").val();
+      let lastName = $("#user"+userId+"LastName").val();
+      let emailAddress = $("#user"+userId+"EmailAddress").val();
+      let username = $("#user"+userId+"Username").val();
+      let password = $("#user"+userId+"Password").val();
+      let role = $("#user"+userId+"Role").val();
+      let locked = $("#user"+userId+"Locked").val();
+      let credentialPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,50}$/;
+      let namePattern = /^[A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+([ ][A-ZČĆŽŠĐ][A-zČĆŽŠĐčćžšđ']+)*$/;
+      let emailAddressPattern = /^(?=.{6,30}@)[0-9a-z]+(?:\.[0-9a-z]+)*@[a-z0-9]{2,}(?:\.[a-z]{2,})+$/;
+      let errorCounter = 0;
+      if(firstName!=""){
+        if(namePattern.test(firstName)){
+          $("#user"+userId+"FirstNameNote").html("You have filled in this field properly!");
+          $("#user"+userId+"FirstNameNote").removeClass("text-danger");
+          $("#user"+userId+"FirstNameNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#user"+userId+"FirstNameNote").html("You have not fill in this field properly. Example: Al McKay");
+          $("#user"+userId+"FirstNameNote").removeClass("text-success");
+          $("#user"+userId+"FirstNameNote").addClass("text-danger");
+        }
+      }
+      else {
+        errorCounter++;
+        $("#user"+userId+"FirstNameNote").html("This field must not be left blank!");
+        $("#user"+userId+"FirstNameNote").removeClass("text-success");
+        $("#user"+userId+"FirstNameNote").addClass("text-danger");
+      }
+      if(lastName!=""){
+        if(namePattern.test(lastName)){
+          $("#user"+userId+"LastNameNote").html("You have filled in this field properly!");
+          $("#user"+userId+"LastNameNote").removeClass("text-danger");
+          $("#user"+userId+"LastNameNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#user"+userId+"LastNameNote").html("You have not fill in this field properly. Example: O'Bryant Junior");
+          $("#user"+userId+"LastNameNote").removeClass("text-success");
+          $("#user"+userId+"LastNameNote").addClass("text-danger");
+        }
+      }
+      else {
+        errorCounter++;
+        $("#user"+userId+"LastNameNote").html("This field must not be left blank!");
+        $("#user"+userId+"LastNameNote").removeClass("text-success");
+        $("#user"+userId+"LastNameNote").addClass("text-danger");
+      }
+      if (emailAddress != "") {
+        if (emailAddressPattern.test(emailAddress)) {
+          $("#user"+userId+"EmailAddressNote").html("You have filled in this field properly!");
+          $("#user"+userId+"EmailAddressNote").removeClass("text-danger");
+          $("#user"+userId+"EmailAddressNote").addClass("text-success");
+        } 
+        else {
+          errorCounter++;
+          $("#user"+userId+"EmailAddressNote").html("You have not fill in this field properly. Example: 1james.caa1n@3mail.co.us");
+          $("#user"+userId+"EmailAddressNote").removeClass("text-success");
+          $("#user"+userId+"EmailAddressNote").addClass("text-danger");
+        }
+      } 
+      else {
+        errorCounter++;
+        $("#user"+userId+"EmailAddressNote").html("This field must not be left blank!");
+        $("#user"+userId+"EmailAddressNote").removeClass("text-success");
+        $("#user"+userId+"EmailAddressNote").addClass("text-danger");
+      }
+      if (username != "") {
+        if (credentialPattern.test(username)) {
+          $("#user"+userId+"UsernameNote").html("You have filled in this field properly!");
+          $("#user"+userId+"UsernameNote").removeClass("text-danger");
+          $("#user"+userId+"UsernameNote").addClass("text-success");
+        } 
+        else {
+          errorCounter++;
+          $("#user"+userId+"UsernameNote").html("You have not fill in this field properly. Example: s15iNatra");
+          $("#user"+userId+"UsernameNote").removeClass("text-success");
+          $("#user"+userId+"UsernameNote").addClass("text-danger");
+        }
+      } 
+      else {
+        errorCounter++;
+        $("#user"+userId+"UsernameNote").html("This field must not be left blank!");
+        $("#user"+userId+"UsernameNote").removeClass("text-success");
+        $("#user"+userId+"UsernameNote").addClass("text-danger");
+      }
+      if (password != "") {
+        $("#user"+userId+"PasswordNote").html("You have filled in this field properly!");
+        $("#user"+userId+"PasswordNote").removeClass("text-danger");
+        $("#user"+userId+"PasswordNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#user"+userId+"PasswordNote").html("This field must not be left blank!");
+        $("#user"+userId+"PasswordNote").removeClass("text-success");
+        $("#user"+userId+"PasswordNote").addClass("text-danger");
+      }
+      if(role!=""){
+        $("#user"+userId+"RoleNote").html("You have filled in this field properly!");
+        $("#user"+userId+"RoleNote").removeClass("text-danger");
+        $("#user"+userId+"RoleNote").addClass("text-success");
+      }
+      else {
+        errorCounter++;
+        $("#user"+userId+"RoleNote").html("This field must not be left blank!");
+        $("#user"+userId+"RoleNote").removeClass("text-success");
+        $("#user"+userId+"RoleNote").addClass("text-danger");
+      }
+      if(locked!=""){
+        if(locked=="Yes"){
+          locked = "1"
+          $("#user"+userId+"LockedNote").html("You have filled in this field properly!");
+          $("#user"+userId+"LockedNote").removeClass("text-danger");
+          $("#user"+userId+"LockedNote").addClass("text-success");
+        }
+        else if(locked=="No"){
+          locked= "";
+          $("#user"+userId+"LockedNote").html("You have filled in this field properly!");
+          $("#user"+userId+"LockedNote").removeClass("text-danger");
+          $("#user"+userId+"LockedNote").addClass("text-success");
+        }
+        else {
+          errorCounter++;
+          $("#user"+userId+"LockedNote").html("You have not fill in this field properly. Example: No");
+          $("#user"+userId+"LockedNote").removeClass("text-success");
+          $("#user"+userId+"LockedNote").addClass("text-danger");
+        }
+      }
+      else {
+        errorCounter++;
+        $("#user"+userId+"LockedNote").html("This field must not be left blank!");
+        $("#user"+userId+"LockedNote").removeClass("text-success");
+        $("#user"+userId+"LockedNote").addClass("text-danger");
+      }
+      if(errorCounter==0){
+        let data = {
+          userId : userId,
+          firstName : firstName,
+          lastName : lastName,
+          emailAddress : emailAddress,
+          username : username,
+          password : password,
+          role : role,
+          locked : locked
+        }
+        postViaAjax('changingUser',changingUser,data);
+      }
+    });
+  }
+  function changingUser(jsonData){
+    if(!Array.isArray(jsonData.message)){
+      alert(jsonData.message);
+    }
+    else {
+      for(let i=0;i<jsonData.message.length;i++){
+        alert(jsonData.message[i]);
+      }
+    }
+    if(jsonData.message=="You have changed an user successfully!"){
+      window.location.href="index.php?page=crudUsers";
+    }
+  }
+  function addingUser(jsonData){
+    if(!Array.isArray(jsonData.message)){
+      alert(jsonData.message);
+    }
+    else {
+      for(let i=0;i<jsonData.message.length;i++){
+        alert(jsonData.message[i]);
+      }
+    }
+    if(jsonData.message=="You have added an user successfully!"){
+      window.location.href="index.php?page=crudUsers";
+    }
+  }
+  function deletingUsers(jsonData){
+    alert(jsonData.message);
+    if(jsonData.message=="You have deleted users successfully!"){
+      window.location.href="index.php?page=crudUsers";
+    }
+  }
+}

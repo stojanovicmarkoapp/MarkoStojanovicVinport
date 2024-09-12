@@ -1,0 +1,6 @@
+Parametri za administratorski nalog su:
+username: johnnyCarson25
+password: movieBuff25
+Paramentri za običan korisnički nalog su:
+username: Seaman26
+password: movieBuff26
